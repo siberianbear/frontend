@@ -54,7 +54,7 @@ object LiveEventAgent extends ExecutionContexts with Logging {
       }
 
       val futureResponse = WS.url(Configuration.commercial.liveEventsImagesUrl)
-        .withRequestTimeout(feedMetaData.timeout.toMillis.toInt)
+        .withRequestTimeout(feedMetaData.timeout)
         .get()
 
       futureResponse map { response =>

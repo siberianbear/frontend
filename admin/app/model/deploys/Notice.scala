@@ -4,6 +4,7 @@ import java.net.URI
 import model.deploys.NoticeSteps.{DeployFinishedProd, DeployFinishedCode, BuildStarted, BuildFinished}
 import play.api.libs.json._
 import play.api.libs.ws.WS
+import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 import scala.concurrent.Future
 import play.api.Play.current
@@ -78,7 +79,7 @@ case class SlackNotice(build: TeamCityBuild,
   override def send(step: NoticeStep) = {
     WS.url(hookUrl.toString)
       .withHeaders("Content-Type" -> "application/json")
-      .withRequestTimeout(5000)
+      .withRequestTimeout(5.seconds)
       .post(jsonBodyForStep(step))
       .map { response =>
         NoticeResponse(this, response.body)

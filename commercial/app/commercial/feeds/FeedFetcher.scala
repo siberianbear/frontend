@@ -94,7 +94,7 @@ object FeedFetcher {
 
     val futureResponse = WS.url(feedMetaData.url)
                          .withQueryString(feedMetaData.parameters.toSeq: _*)
-                         .withRequestTimeout(feedMetaData.timeout.toMillis.toInt)
+                         .withRequestTimeout(feedMetaData.timeout)
                          .get()
 
     futureResponse map { response =>

@@ -12,17 +12,17 @@ import weather.geo.LatitudeLongitude
 import weather.models.CityId
 import weather.models.accuweather.{ForecastResponse, LocationResponse, WeatherResponse}
 import dispatch._, Defaults._
-import java.util.concurrent.{TimeoutException, TimeUnit}
-import scala.concurrent.duration.Duration
+import java.util.concurrent.TimeoutException
+import scala.concurrent.duration._
 
 object WeatherApi extends ExecutionContexts with ResourcesHelper {
   lazy val weatherApiKey: String = Configuration.weather.apiKey.getOrElse(
     throw new RuntimeException("Weather API Key not set")
   )
 
-  val requestTimeout = 300
+  val requestTimeout = 300.milliseconds
   val requestRetryMax = 3
-  val requestRetryDelay = Duration(100, TimeUnit.MILLISECONDS)
+  val requestRetryDelay = 100.milliseconds
   val requestRetryBackoffBase = 2
 
   private def autocompleteUrl(query: String): String =

@@ -8,6 +8,7 @@ import controllers.AuthLogging
 import tools.LoadBalancer
 import play.api.libs.ws.WS
 import scala.concurrent.Future
+import scala.concurrent.duration._
 
 case class EndpointStatus(name: String, isOk: Boolean, messages: String*)
 
@@ -113,7 +114,7 @@ object TroubleshooterController extends Controller with Logging with AuthLogging
 
   private def httpGet(testName: String, url: String) =  {
     import play.api.Play.current
-    WS.url(url).withVirtualHost("www.theguardian.com").withRequestTimeout(2000).get().map {
+    WS.url(url).withVirtualHost("www.theguardian.com").withRequestTimeout(2.seconds).get().map {
       response =>
         if (response.status == 200) {
           TestPassed(testName)

@@ -7,6 +7,7 @@ import org.joda.time.DateTime
 import play.api.libs.ws.WS
 import play.api.libs.json.{ JsArray, JsObject, JsValue, Json, JsNull }
 import scala.concurrent.Future
+import scala.concurrent.duration._
 
 case class FastlyStatistic(service: String, region: String, timestamp: Long, name: String, value: String) {
   lazy val key: (String, String, String) = (service, name, region)
@@ -40,7 +41,7 @@ object Fastly extends ExecutionContexts with Logging {
       regions map { region =>
         val request = WS.url(s"https://api.fastly.com/stats/service/${fastly.serviceId}?by=minute&from=45+minutes+ago&to=15+minutes+ago&region=$region")
           .withHeaders("Fastly-Key" -> fastly.key)
-          .withRequestTimeout(20000)
+          .withRequestTimeout(20.seconds)
 
         val response: Future[Option[String]] = request.get().map { resp => Some(resp.body) }.recover {
           case e: Throwable => {

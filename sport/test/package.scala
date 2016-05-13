@@ -8,15 +8,14 @@ import java.nio.ByteBuffer
 import java.net.URI
 import java.util
 import org.scalatest.Suites
-import play.api.libs.ws.ning.NingWSResponse
-import recorder.HttpRecorder
+import recorder.{WsHttpRecorder, HttpRecorder}
 import play.api.libs.ws.WSResponse
 import play.api.{Application => PlayApplication}
 import conf.{SportConfiguration, FootballClient, Configuration}
 import pa.Http
-import io.Source
 import org.joda.time.LocalDate
 import scala.concurrent.Future
+import scala.io.Source
 
 class SportTestSuite extends Suites (
   new CompetitionListControllerTest,
@@ -67,19 +66,8 @@ private case class Resp(getResponseBody: String) extends com.ning.http.client.Re
   def hasResponseBody: Boolean = throw new NotImplementedError()
 }
 
-object FeedHttpRecorder extends HttpRecorder[WSResponse] {
-
+object FeedHttpRecorder extends HttpRecorder[WSResponse] with WsHttpRecorder[WSResponse] {
   override lazy val baseDir = new File(System.getProperty("user.dir"), "data/sportfeed")
-
-  def toResponse(str: String) = NingWSResponse(Resp(str))
-
-  def fromResponse(response: WSResponse) = {
-    if (response.status == 200) {
-      response.body
-    } else {
-      s"Error:${response.status}"
-    }
-  }
 }
 
 // Stubs data for Football stats integration tests

@@ -5,6 +5,7 @@ import model.{MetaData, SimplePage, Cached, TinyResponse}
 import play.api.data.Forms._
 import play.api.libs.ws.{WS, WSResponse}
 import play.filters.csrf.{CSRFCheck, CSRFAddToken}
+import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Future}
 import common.{ExecutionContexts, JsonComponent}
 import play.api.mvc.{Cookie, Action, RequestHeader, Result}
@@ -99,7 +100,7 @@ object CommentsController extends DiscussionController with ExecutionContexts {
     val url = s"${conf.Configuration.discussion.apiRoot}/comment/${abuseReport.commentId}/reportAbuse"
     val headers = Seq("D2-X-UID" -> conf.Configuration.discussion.d2Uid, "GU-Client" -> conf.Configuration.discussion.apiClientHeader)
     if (cookie.isDefined) { headers :+  ("Cookie"->s"SC_GU_U=${cookie.get}") }
-    WS.url(url).withHeaders(headers: _*).withRequestTimeout(2000).post(abuseReportToMap(abuseReport))
+    WS.url(url).withHeaders(headers: _*).withRequestTimeout(2.seconds).post(abuseReportToMap(abuseReport))
 
   }
 

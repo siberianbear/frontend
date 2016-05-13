@@ -1,19 +1,24 @@
 package test
 
+import akka.util.{CompactByteString, ByteString}
 import conf.Configuration
+import org.asynchttpclient.HttpResponseStatus
+import org.asynchttpclient.netty.NettyResponse
 import org.scalatest.Suites
-import play.api.libs.ws.ning.NingWSResponse
-import recorder.HttpRecorder
+import play.api.libs.json.{Json, JsValue}
+import play.api.libs.ws.ahc.AhcWSResponse
+import recorder.{WsHttpRecorder, HttpRecorder}
 import com.ning.http.client.{Response => NingResponse, FluentCaseInsensitiveStringsMap}
 import com.ning.http.client.uri.Uri;
-import play.api.libs.ws.{WS, WSResponse}
+import play.api.libs.ws.{WSCookie, WS, WSResponse}
 import play.api.Application
 import java.util
 import java.net.URI
 import java.io.{File, InputStream}
 import java.nio.ByteBuffer
-import play.api.Plugin
 import discussion.DiscussionApi
+import scala.concurrent.duration._
+import scala.xml.{XML, Elem}
 
 private case class Resp(getResponseBody: String) extends NingResponse {
   def getContentType: String = "application/json"
@@ -40,19 +45,8 @@ private case class Resp(getResponseBody: String) extends NingResponse {
 
 }
 
-object DiscussionApiHttpRecorder extends HttpRecorder[WSResponse] {
-
+object DiscussionApiHttpRecorder extends HttpRecorder[WSResponse] with WsHttpRecorder[WSResponse] {
   override lazy val baseDir = new File(System.getProperty("user.dir"), "data/discussion")
-
-  def toResponse(str: String) = NingWSResponse(Resp(str))
-
-  def fromResponse(response: WSResponse) = {
-    if (response.status == 200) {
-      response.body
-    } else {
-      s"Error:${response.status}"
-    }
-  }
 }
 
 class DiscussionApiStub extends DiscussionApi {
@@ -68,7 +62,7 @@ class DiscussionApiStub extends DiscussionApi {
   protected val apiTimeout = conf.Configuration.discussion.apiTimeout
 
   override protected def GET(url: String, headers: (String, String)*) = DiscussionApiHttpRecorder.load(url, Map.empty){
-    WS.url(url).withRequestTimeout(2000).get()
+    WS.url(url).withRequestTimeout(2.seconds).get()
   }
 }
 

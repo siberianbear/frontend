@@ -3,7 +3,8 @@ package discussion.util
 import play.api.libs.ws.{WS, WSResponse}
 import play.api.libs.json.{JsValue, Json}
 import common.{ExecutionContexts, Logging, StopWatch}
-import scala.concurrent.Future
+import scala.concurrent._
+import scala.concurrent.duration._
 
 trait Http extends Logging with ExecutionContexts {
 
@@ -24,7 +25,7 @@ trait Http extends Logging with ExecutionContexts {
 
   protected def GET(url: String, headers: (String, String)*): Future[WSResponse] = {
     import play.api.Play.current
-    WS.url(url).withHeaders(headers: _*).withRequestTimeout(2000).get()
+    WS.url(url).withHeaders(headers: _*).withRequestTimeout(2.seconds).get()
   }
 
 }
