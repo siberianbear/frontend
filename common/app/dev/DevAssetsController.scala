@@ -1,8 +1,10 @@
 package dev
 
+import akka.stream.scaladsl.StreamConverters
 import common.Assets.AssetNotFoundException
 import common.ExecutionContexts
 import java.io.File
+import play.api.http.HttpEntity
 import play.api.libs.MimeTypes
 import play.api.mvc._
 import play.api.libs.iteratee.Enumerator
@@ -31,8 +33,10 @@ object DevAssetsController extends Controller with ExecutionContexts {
       findDevAsset.lift(path)
     }
 
-    val resolved = assetPath map {
-        new File(_).toURI.toURL
+    val file = assetPath.map(path => new File(path))
+
+    val resolved = file map {
+        _.toURI.toURL
       } getOrElse {
         throw AssetNotFoundException(path)
       }
@@ -44,7 +48,10 @@ object DevAssetsController extends Controller with ExecutionContexts {
 
     Result(
       ResponseHeader(OK, Map(CONTENT_TYPE -> contentType)),
-      Enumerator.fromStream(resolved.openStream())
+      HttpEntity.Streamed(
+        data = StreamConverters.fromInputStream(resolved.openStream),
+        contentLength = file.map(_.length),
+        contentType = Some(contentType))
     )
   }
 

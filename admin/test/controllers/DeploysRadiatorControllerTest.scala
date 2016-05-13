@@ -1,5 +1,6 @@
 package controllers.admin
 
+import akka.stream.Materializer
 import common.ExecutionContexts
 import controllers.Helpers.DeploysTestHttpRecorder
 import model.deploys._
@@ -13,6 +14,8 @@ import test.ConfiguredTestSuite
 import scala.concurrent.duration._
 
 @DoNotDiscover class DeploysRadiatorControllerTest extends WordSpec with Matchers with ConfiguredTestSuite with ExecutionContexts {
+
+  implicit lazy val materializer: Materializer = app.materializer
 
   val existingBuild = "1621"
 

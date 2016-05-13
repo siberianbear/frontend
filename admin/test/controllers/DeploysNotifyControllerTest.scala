@@ -1,5 +1,6 @@
 package controllers.admin
 
+import akka.stream.Materializer
 import common.ExecutionContexts
 import controllers.Helpers.DeploysTestHttpRecorder
 import model.deploys._
@@ -14,6 +15,8 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 
 @DoNotDiscover class DeploysNotifyControllerTest extends WordSpec with Matchers with ConfiguredTestSuite with ExecutionContexts {
+
+  implicit lazy val materializer: Materializer = app.materializer
 
   val existingBuild = "1629"
   val fakeApiKey = "fake-api-key"

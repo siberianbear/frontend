@@ -1,5 +1,6 @@
 package conf
 
+import akka.stream.{ActorMaterializer, Materializer}
 import common.ExecutionContexts
 import org.joda.time.DateTime
 import org.scalatest.{WordSpec, Matchers}
@@ -13,6 +14,8 @@ import scala.concurrent.duration._
 import scala.util.Random
 
 class CachedHealthCheckTest extends WordSpec with Matchers with SingleServerSuite with ScalaFutures with ExecutionContexts {
+
+  implicit def materializer: Materializer = app.materializer
 
   //Helper method to construct mock Results
   def mockResult(statusCode: Int, date: DateTime = DateTime.now, expiration: Duration = 10.seconds): HealthCheckResult = {
