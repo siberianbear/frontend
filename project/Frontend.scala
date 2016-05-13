@@ -2,10 +2,9 @@ package com.gu
 
 import sbt._
 import sbt.Keys._
-import play.Play.autoImport._
-import PlayKeys._
 import play._
 import play.sbt._
+import play.sbt.PlayImport._
 import play.sbt.routes.RoutesKeys
 import play.twirl.sbt.Import._
 import com.typesafe.sbt.web.Import._

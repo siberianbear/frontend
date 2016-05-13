@@ -11,6 +11,8 @@ import com.gu.riffraff.artifact.RiffRaffArtifact
 import com.gu.riffraff.artifact.RiffRaffArtifact.autoImport._
 import play.twirl.sbt.Import._
 import Dependencies._
+import play.sbt.routes.RoutesKeys._
+import play.sbt.PlayScala
 
 trait Prototypes {
   val version = "1-SNAPSHOT"
@@ -28,7 +30,8 @@ trait Prototypes {
       val _ = initialize.value
       assert(sys.props("java.specification.version") == "1.8",
         "Java 8 is required for this project.")
-    }
+    },
+    routesGenerator := StaticRoutesGenerator
   )
 
   val frontendIntegrationTestsSettings = Seq (
@@ -149,12 +152,12 @@ trait Prototypes {
     }
   )
 
-  def root() = Project("root", base = file(".")).enablePlugins(play.PlayScala)
+  def root() = Project("root", base = file(".")).enablePlugins(PlayScala)
     .settings(frontendCompilationSettings)
     .settings(frontendRootSettings)
 
   def application(applicationName: String) = {
-    Project(applicationName, file(applicationName)).enablePlugins(play.PlayScala, RiffRaffArtifact, UniversalPlugin)
+    Project(applicationName, file(applicationName)).enablePlugins(PlayScala, RiffRaffArtifact, UniversalPlugin)
     .settings(frontendDependencyManagementSettings)
     .settings(frontendCompilationSettings)
     .settings(frontendClientSideSettings)
@@ -166,7 +169,7 @@ trait Prototypes {
   }
 
   def library(applicationName: String) = {
-    Project(applicationName, file(applicationName)).enablePlugins(play.PlayScala)
+    Project(applicationName, file(applicationName)).enablePlugins(PlayScala)
     .settings(frontendDependencyManagementSettings)
     .settings(frontendCompilationSettings)
     .settings(frontendClientSideSettings)
