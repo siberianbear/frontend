@@ -2,6 +2,7 @@ package conf
 
 import javax.inject.Inject
 
+import akka.stream.Materializer
 import com.gu.googleauth.{UserIdentity, FilterExemption}
 import common.ExecutionContexts
 import controllers.AuthCookie
@@ -14,7 +15,7 @@ import scala.concurrent.Future
 
 // OBVIOUSLY this is only for the preview server
 // NOT to be used elsewhere...
-class NoCacheFilter extends Filter with ExecutionContexts {
+class NoCacheFilter(implicit val mat: Materializer) extends Filter with ExecutionContexts {
   override def apply(nextFilter: (RequestHeader) => Future[Result])(request: RequestHeader): Future[Result] =
     nextFilter(request).map(_.withHeaders("Cache-Control" -> "no-cache"))
 }
@@ -36,7 +37,7 @@ object FilterExemptions {
 object PreviewAuthFilters {
   val LOGIN_ORIGIN_KEY = "loginOriginUrl"
   class AuthFilterWithExemptions( loginUrl: FilterExemption,
-    exemptions: Seq[FilterExemption])(implicit environment: Environment) extends Filter {
+    exemptions: Seq[FilterExemption])(implicit val mat: Materializer, environment: Environment) extends Filter {
 
     private def doNotAuthenticate(request: RequestHeader) = environment.mode == Mode.Test ||
       request.path.startsWith(loginUrl.path) ||
@@ -58,7 +59,8 @@ object PreviewAuthFilters {
 }
 
 class StandaloneFilters @Inject() (
-    implicit environment: Environment
+    implicit mat: Materializer,
+    environment: Environment
 ) extends HttpFilters {
 
   val filters = new PreviewAuthFilters.AuthFilterWithExemptions(

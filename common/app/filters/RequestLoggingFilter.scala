@@ -1,5 +1,6 @@
 package filters
 
+import akka.stream.Materializer
 import common.{ExecutionContexts, Logging, StopWatch}
 import play.api.mvc.{Result, RequestHeader, Filter}
 
@@ -7,7 +8,7 @@ import scala.concurrent.Future
 import scala.util.{Failure, Random, Success}
 import conf.switches.Switches
 
-class RequestLoggingFilter extends Filter with Logging with ExecutionContexts {
+class RequestLoggingFilter(implicit val mat: Materializer) extends Filter with Logging with ExecutionContexts {
   override def apply(next: (RequestHeader) => Future[Result])(rh: RequestHeader): Future[Result] = {
     val stopWatch = new StopWatch
 
@@ -31,7 +32,7 @@ class RequestLoggingFilter extends Filter with Logging with ExecutionContexts {
   }
 }
 
-class DiscussionRequestLoggingFilter extends Filter with Logging with ExecutionContexts {
+class DiscussionRequestLoggingFilter(implicit val mat: Materializer) extends Filter with Logging with ExecutionContexts {
   override def apply(next: (RequestHeader) => Future[Result])(rh: RequestHeader): Future[Result] = {
 
     val requestId = Random.nextInt(Integer.MAX_VALUE)
