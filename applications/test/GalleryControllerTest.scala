@@ -18,7 +18,7 @@ import org.scalatest.{DoNotDiscover, Matchers, FlatSpec}
 
     val result = controllers.GalleryController.render(galleryUrl)(fakeRequest)
     status(result) should be(200)
-    header("Content-Type", result).get should be("application/json; charset=utf-8")
+    contentType(result) shouldBe Some("application/json")
     contentAsString(result) should startWith("{\"config\"")
   }
 
@@ -40,7 +40,7 @@ import org.scalatest.{DoNotDiscover, Matchers, FlatSpec}
 
     val result = controllers.GalleryController.lightboxJson(galleryUrl)(fakeRequest)
     status(result) should be(200)
-    header("Content-Type", result).get should be("application/json; charset=utf-8")
+    contentType(result) shouldBe Some("application/json")
     contentAsString(result) should startWith("{\"id\"")
   }
 }

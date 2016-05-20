@@ -25,7 +25,7 @@ import org.scalatest.{DoNotDiscover, BeforeAndAfterAll, Matchers, FlatSpec}
 
     val result = controllers.IndexController.render(section)(fakeRequest)
     status(result) should be(200)
-    header("Content-Type", result).get should be("application/json; charset=utf-8")
+    contentType(result) shouldBe Some("application/json")
     contentAsString(result) should startWith("{\"html\"")
   }
 
@@ -63,7 +63,7 @@ import org.scalatest.{DoNotDiscover, BeforeAndAfterAll, Matchers, FlatSpec}
 
     val result = controllers.IndexController.renderTrails(section)(fakeRequest)
     status(result) should be(200)
-    header("Content-Type", result).get should be("application/json; charset=utf-8")
+    contentType(result) shouldBe Some("application/json")
     contentAsString(result) should startWith("{\"html\"")
   }
 
