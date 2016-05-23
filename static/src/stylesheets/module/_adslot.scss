@@ -473,10 +473,11 @@
 
             @include mq(leftCol) {
                 left: -160px;
+                left: -gs-span(2) + $gs-gutter;
             }
 
             @include mq(wide) {
-                left: -240px;
+                left: -gs-span(3) + $gs-gutter;
             }
         }
 
