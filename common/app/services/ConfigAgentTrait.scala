@@ -10,10 +10,10 @@ import conf.switches.Switches
 import fronts.FrontsApi
 import model.pressed.CollectionConfig
 import model.{FrontProperties, SeoDataJson}
+import play.api.inject.ApplicationLifecycle
 import play.api.libs.json.Json
-import play.api.{Application, GlobalSettings}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
@@ -154,11 +154,8 @@ trait ConfigAgentTrait extends ExecutionContexts with Logging {
 
 object ConfigAgent extends ConfigAgentTrait
 
-trait ConfigAgentLifecycle extends GlobalSettings {
-
-  override def onStart(app: Application) {
-    super.onStart(app)
-
+class ConfigAgentLifecycle(appLifecycle: ApplicationLifecycle)(implicit ec: ExecutionContext) extends LifecycleComponent {
+  override def start() = {
     Jobs.deschedule("ConfigAgentJob")
     Jobs.schedule("ConfigAgentJob", "18 * * * * ?") {
       ConfigAgent.refresh()
@@ -167,10 +164,9 @@ trait ConfigAgentLifecycle extends GlobalSettings {
     AkkaAsync {
       ConfigAgent.refresh()
     }
-  }
 
-  override def onStop(app: Application) {
-    Jobs.deschedule("ConfigAgentJob")
-    super.onStop(app)
+    appLifecycle.addStopHook { () => Future {
+      Jobs.deschedule("ConfigAgentJob")
+    }}
   }
 }

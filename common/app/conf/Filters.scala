@@ -86,10 +86,10 @@ object Filters {
   )
 }
 
-class CommonFilters extends HttpFilters {
+object CommonFilters extends HttpFilters {
   val filters = Filters.common
 }
 
-class CommonGzipFilter extends HttpFilters {
+object CommonGzipFilter extends HttpFilters {
   val filters = Seq(new Gzipper)
 }

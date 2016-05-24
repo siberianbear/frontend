@@ -3,10 +3,11 @@ package conf
 import common._
 import conf.switches.Switches
 import model.Cors
+import play.api.inject.ApplicationLifecycle
 import play.api.{Application, GlobalSettings}
 import play.api.mvc.{Result, RequestHeader, Results}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 trait CorsErrorHandler extends GlobalSettings with Results with common.ExecutionContexts {
 
@@ -35,10 +36,9 @@ trait CorsErrorHandler extends GlobalSettings with Results with common.Execution
   }
 }
 
-trait SwitchboardLifecycle extends GlobalSettings with ExecutionContexts with Logging {
+class SwitchboardLifecycle(appLifecycle: ApplicationLifecycle)(implicit ec: ExecutionContext) extends LifecycleComponent with ExecutionContexts with Logging {
 
-  override def onStart(app: Application) {
-    super.onStart(app)
+  override def start(): Unit = {
     Jobs.deschedule("SwitchBoardRefreshJob")
     //run every minute, 47 seconds after the minute
     Jobs.schedule("SwitchBoardRefreshJob", "47 * * * * ?") {
@@ -48,11 +48,11 @@ trait SwitchboardLifecycle extends GlobalSettings with ExecutionContexts with Lo
     AkkaAsync {
       refresh()
     }
-  }
 
-  override def onStop(app: Application) {
-    Jobs.deschedule("SwitchBoardRefreshJob")
-    super.onStop(app)
+    appLifecycle.addStopHook { () => Future {
+      Jobs.deschedule("SwitchBoardRefreshJob")
+    }
+    }
   }
 
   def refresh(): Unit = {
