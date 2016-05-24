@@ -26,6 +26,8 @@ import play.api.i18n.Messages.Implicits.applicationMessagesApi
 
 class EmailControllerTest extends WordSpec with ShouldMatchers with MockitoSugar with OneAppPerSuite {
 
+  val csrfAddToken = app.injector.instanceOf[play.filters.csrf.CSRFAddToken]
+
   val returnUrlVerifier = mock[ReturnUrlVerifier]
   val conf = mock[IdentityConfiguration]
   val api = mock[IdApiClient]
@@ -83,7 +85,7 @@ class EmailControllerTest extends WordSpec with ShouldMatchers with MockitoSugar
     "the form submission is valid" when {
       running(app) {
         val emailFormat = "Text"
-        val fakeRequest = FakeCSRFRequest(POST, "/email-prefs")
+        val fakeRequest = FakeCSRFRequest(csrfAddToken, POST, "/email-prefs")
           .withFormUrlEncodedBody("htmlPreference" -> emailFormat, "csrfToken" -> "abc")
         val authRequest = new AuthRequest(authenticatedUser, fakeRequest)
 

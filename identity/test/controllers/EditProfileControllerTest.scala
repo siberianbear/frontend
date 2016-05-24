@@ -21,6 +21,9 @@ import play.api.i18n.Messages.Implicits.applicationMessagesApi
 //TODO test form validation and population of form fields.
 class EditProfileControllerTest extends WordSpec with OneAppPerSuite with ShouldMatchers with MockitoSugar with OptionValues {
 
+  lazy val csrfAddToken = app.injector.instanceOf[play.filters.csrf.CSRFAddToken]
+  lazy val csrfCheck = app.injector.instanceOf[play.filters.csrf.CSRFCheck]
+
   trait EditProfileFixture {
 
     val idUrlBuilder = mock[IdentityUrlBuilder]
@@ -45,7 +48,7 @@ class EditProfileControllerTest extends WordSpec with OneAppPerSuite with Should
     when(idRequest.trackingData) thenReturn trackingData
     when(idRequest.returnUrl) thenReturn None
 
-    lazy val controller = new EditProfileController(idUrlBuilder, authenticatedActions, api, idRequestParser, applicationMessagesApi)
+    lazy val controller = new EditProfileController(idUrlBuilder, authenticatedActions, api, idRequestParser, applicationMessagesApi, csrfCheck)
   }
 
   "EditProfileController" when {
@@ -57,7 +60,7 @@ class EditProfileControllerTest extends WordSpec with OneAppPerSuite with Should
       "save the user through the ID API" in new EditProfileFixture {
 
         running(app) {
-          val fakeRequest = FakeCSRFRequest()
+          val fakeRequest = FakeCSRFRequest(csrfAddToken)
             .withFormUrlEncodedBody(
               "location" -> location,
               "aboutMe" -> aboutMe,
@@ -97,7 +100,7 @@ class EditProfileControllerTest extends WordSpec with OneAppPerSuite with Should
 
       "then the user should be saved on the ID API" in new EditProfileFixture {
         running(app) {
-          val fakeRequest = FakeCSRFRequest()
+          val fakeRequest = FakeCSRFRequest(csrfAddToken)
             .withFormUrlEncodedBody(
               "receiveGnmMarketing" -> receiveGnmMarketing.toString,
               "receive3rdPartyMarketing" -> receive3rdPartyMarketing.toString,
@@ -157,7 +160,7 @@ class EditProfileControllerTest extends WordSpec with OneAppPerSuite with Should
 
         import FakeRequestAccountData._
 
-        FakeCSRFRequest()
+        FakeCSRFRequest(csrfAddToken)
           .withFormUrlEncodedBody(
             ("primaryEmailAddress", primaryEmailAddress),
             ("title", testTitle),
@@ -180,7 +183,7 @@ class EditProfileControllerTest extends WordSpec with OneAppPerSuite with Should
 
         import FakeRequestAccountData._
 
-        FakeCSRFRequest()
+        FakeCSRFRequest(csrfAddToken)
           .withFormUrlEncodedBody(
             ("primaryEmailAddress", primaryEmailAddress),
             ("title", testTitle),
@@ -201,7 +204,7 @@ class EditProfileControllerTest extends WordSpec with OneAppPerSuite with Should
 
         import FakeRequestAccountData._
 
-        FakeCSRFRequest()
+        FakeCSRFRequest(csrfAddToken)
           .withFormUrlEncodedBody(
             ("primaryEmailAddress", primaryEmailAddress),
             ("title", testTitle),
@@ -223,7 +226,7 @@ class EditProfileControllerTest extends WordSpec with OneAppPerSuite with Should
 
         import FakeRequestAccountData._
 
-        FakeCSRFRequest()
+        FakeCSRFRequest(csrfAddToken)
           .withFormUrlEncodedBody(
             ("primaryEmailAddress", primaryEmailAddress),
             ("title", testTitle),
