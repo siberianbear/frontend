@@ -1,12 +1,12 @@
 package dfp
 
 import common.dfp.{GuAdUnit, GuCreativeTemplate}
-import common.{AkkaAsync, ExecutionContexts, Jobs}
-import play.api.{Application, GlobalSettings}
+import common.{LifecycleComponent, AkkaAsync, ExecutionContexts, Jobs}
+import play.api.inject.ApplicationLifecycle
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-trait DfpDataCacheLifecycle extends GlobalSettings with ExecutionContexts {
+class DfpDataCacheLifecycle(appLifecycle: ApplicationLifecycle)(implicit ec: ExecutionContext) extends LifecycleComponent with ExecutionContexts {
 
   trait Job[T] {
     val name: String
@@ -84,9 +84,7 @@ trait DfpDataCacheLifecycle extends GlobalSettings with ExecutionContexts {
 
   )
 
-  override def onStart(app: Application) {
-    super.onStart(app)
-
+  override def start() = {
     jobs foreach { job =>
       Jobs.deschedule(job.name)
       Jobs.scheduleEveryNMinutes(job.name, job.interval) {
@@ -99,12 +97,11 @@ trait DfpDataCacheLifecycle extends GlobalSettings with ExecutionContexts {
       CreativeTemplateAgent.refresh()
       DfpTemplateCreativeCacheJob.run()
     }
-  }
 
-  override def onStop(app: Application) {
-    jobs foreach { job =>
-      Jobs.deschedule(job.name)
-    }
-    super.onStop(app)
+    appLifecycle.addStopHook { () => Future {
+      jobs foreach { job =>
+        Jobs.deschedule(job.name)
+      }
+    }}
   }
 }

@@ -3,33 +3,32 @@ package purge
 import java.util.concurrent.atomic.AtomicReference
 
 import cache.SurrogateKey
-import common.{AkkaAsync, ExecutionContexts, Jobs, Logging}
+import common._
 import conf.AdminConfiguration.fastly
 import conf.Configuration.environment
 import contentapi.ContentApiClient.{getResponse, search}
 import implicits.Dates
 import play.api.Play.current
+import play.api.inject.ApplicationLifecycle
 import play.api.libs.ws.WS
 import play.api.{Application, GlobalSettings}
 import conf.switches.Switches.{SoftPurgeSwitch, LongCacheSwitch }
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import com.gu.contentapi.client.utils.CapiModelEnrichment.RichCapiDateTime
 
-trait SoftPurge extends GlobalSettings {
+class SoftPurgeLifecycle(appLifecycle: ApplicationLifecycle)(implicit ec: ExecutionContext) extends LifecycleComponent {
 
   private val JobName = "soft-purge-job"
 
-  override def onStart(app: Application): Unit = {
-    super.onStart(app)
-    Jobs.scheduleEveryNSeconds(JobName, 5){
+  override def start() = {
+    Jobs.scheduleEveryNSeconds(JobName, 5) {
       CdnPurge.run()
     }
-  }
 
-  override def onStop(app: Application): Unit = {
-    Jobs.deschedule(JobName)
-    super.onStop(app)
+    appLifecycle.addStopHook { () => Future {
+      Jobs.deschedule(JobName)
+    }}
   }
 }
 
