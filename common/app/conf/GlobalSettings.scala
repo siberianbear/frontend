@@ -3,21 +3,36 @@ package conf
 import common._
 import conf.switches.Switches
 import model.Cors
+import play.api.Mode
+import play.api.http.Status._
+import play.api.http.DefaultHttpErrorHandler
 import play.api.inject.ApplicationLifecycle
-import play.api.{Application, GlobalSettings}
+import play.api.routing.Router
+import play.api.{Configuration => PlayConfiguration, Environment}
 import play.api.mvc.{Result, RequestHeader, Results}
+import play.core.SourceMapper
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait CorsErrorHandler extends GlobalSettings with Results with common.ExecutionContexts {
+class CorsHttpErrorHandler(
+  environment: Environment,
+  configuration: PlayConfiguration,
+  sourceMapper: Option[SourceMapper],
+  router: Router
+)(implicit ec: ExecutionContext) extends DefaultHttpErrorHandler(
+  environment = environment,
+  configuration = configuration,
+  sourceMapper = sourceMapper,
+  router = Some(router)
+) with Results {
 
   private val varyFields = List("Origin", "Accept")
   private val defaultVaryFields = varyFields.mkString(",")
 
-  override def onError(request: RequestHeader, ex: Throwable) = {
+  override def onServerError(request: RequestHeader, ex: Throwable) = {
     // Overriding onError in Dev can hide helpful Exception messages.
-    if (play.Play.isDev) {
-      super.onError(request, ex)
+    if (environment.mode == Mode.Dev) {
+      super.onServerError(request, ex)
     } else {
       val headers = request.headers
       val vary = headers.get("Vary").fold(defaultVaryFields)(v => (v :: varyFields).mkString(","))
@@ -28,11 +43,9 @@ trait CorsErrorHandler extends GlobalSettings with Results with common.Execution
     }
   }
 
-  override def onHandlerNotFound(request : RequestHeader) : Future[Result] = {
-    super.onHandlerNotFound(request).map { Cors(_)(request) };
-  }
-  override def onBadRequest(request : RequestHeader, error : String) : Future[Result] = {
-    super.onBadRequest(request, error).map { Cors(_)(request) };
+  override def onClientError(request : RequestHeader, statusCode: Int, message: String) : Future[Result] = statusCode match {
+    case NOT_FOUND | BAD_REQUEST => super.onClientError(request, statusCode, message).map(Cors(_)(request))
+    case _ => super.onClientError(request, statusCode, message)
   }
 }
 
