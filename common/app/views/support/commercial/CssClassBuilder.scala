@@ -9,16 +9,19 @@ object CssClassBuilder {
                        otherClasses: Option[Seq[String]],
                        sizeClass: Option[String],
                        useCardBranding: Boolean): String = {
+
+    def mkString(classes: Seq[String]): String = classes.mkString(" ").trim
+
     val classes: Seq[String] = Seq(
       "advert",
       sizeClass getOrElse "",
       "advert--capi",
       cardContent.icon map (_ => "advert--media") getOrElse "advert--text",
-      adClasses.map(_.map(c => s"advert--$c").mkString(" ")).getOrElse(""),
-      otherClasses.map(_.mkString(" ")).getOrElse(""),
+      adClasses.map(cs => mkString(cs.map(c => s"advert--$c"))).getOrElse(""),
+      otherClasses.map(mkString).getOrElse(""),
       if (useCardBranding) "js-sponsored-card" else ""
     )
-    classes mkString " "
+    mkString(classes)
   }
 
   def linkFromStandardCard(cardContent: CardContent,
