@@ -20,7 +20,3 @@ object HealthCheck extends AllGoodCachedHealthCheck(
     }
   }
 }
-
-trait ApplicationsHealthCheckLifeCycle extends CachedHealthCheckLifeCycle {
-  override val healthCheckController = HealthCheck
-}
